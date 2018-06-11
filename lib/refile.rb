@@ -129,6 +129,11 @@ module Refile
     # @return [String]
     attr_accessor :secret_key
 
+    # Setting that allows uploading files with zero bytes, this makes possible to upload Tempfiles.
+    #
+    # @return [Boolean]
+    attr_accessor :allow_zero_byte_files
+
     # A global registry of backends.
     #
     # @return [Hash{String => Backend}]
@@ -507,4 +512,5 @@ Refile.configure do |config|
   config.automount = true
   config.content_max_age = 60 * 60 * 24 * 365
   config.types[:image] = Refile::Type.new(:image, content_type: %w[image/jpeg image/gif image/png])
+  config.allow_zero_byte_files = false
 end

@@ -53,7 +53,7 @@ module Refile
       errors << extension_error_params(extension) if invalid_extension?(extension)
       errors << content_type_error_params(content_type) if invalid_content_type?(content_type)
       errors << :too_large if cache.max_size and attacher.size and attacher.size >= cache.max_size
-      errors << :zero_byte_detected if attacher.size.to_i.zero?
+      errors << :zero_byte_detected if attacher.size.to_i.zero? && !Refile.allow_zero_byte_files
       errors
     end
 

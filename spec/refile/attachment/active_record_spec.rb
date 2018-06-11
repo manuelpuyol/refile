@@ -97,6 +97,34 @@ describe Refile::ActiveRecord::Attachment do
           expect(post.valid?).to be_falsy
           expect(post.errors[:document].length).to eq(1)
         end
+
+        context "when zero byte upload is restricted" do
+          before do
+            allow(Refile).to receive(:allow_zero_byte_files).and_return(false)
+          end
+
+          it "returns false when file size is zero" do
+            file = Refile.cache.upload(StringIO.new(""))
+            post = klass.new
+            post.document = { id: file.id, content_type: "image/png", size: file.size }.to_json
+            expect(post.valid?).to be_falsy
+            expect(post.errors[:document].length).to eq(1)
+          end
+        end
+
+        context "when zero byte upload is allowed" do
+          before do
+            allow(Refile).to receive(:allow_zero_byte_files).and_return(true)
+          end
+
+          it "returns false when file size is zero" do
+            file = Refile.cache.upload(StringIO.new(""))
+            post = klass.new
+            post.document = { id: file.id, content_type: "image/png", size: file.size }.to_json
+            expect(post.valid?).to be_truthy
+            expect(post.errors[:document]).to be_empty
+          end
+        end
       end
 
       context "extension as Proc" do
@@ -224,14 +252,6 @@ describe Refile::ActiveRecord::Attachment do
         expect(post.errors[:document]).to match_array([%r{not allowed to upload an empty.+Allowed types: image/jpeg, image/gif, and image/png[^,]?}])
       end
 
-      it "returns false when file size is zero" do
-        file = Refile.cache.upload(StringIO.new(""))
-        post = klass.new
-        post.document = { id: file.id, content_type: "image/png", size: file.size }.to_json
-        expect(post.valid?).to be_falsy
-        expect(post.errors[:document].length).to eq(1)
-      end
-
       it "returns true when type is valid" do
         file = Refile.cache.upload(StringIO.new("hello"))
         post = klass.new
@@ -246,6 +266,34 @@ describe Refile::ActiveRecord::Attachment do
         post.document = { id: file.id, content_type: "image/png;charset=UTF-8", size: file.size }.to_json
         expect(post.valid?).to be_truthy
         expect(post.errors[:document]).to be_empty
+      end
+
+      context "when zero byte upload is restricted" do
+        before do
+          allow(Refile).to receive(:allow_zero_byte_files).and_return(false)
+        end
+
+        it "returns false when file size is zero" do
+          file = Refile.cache.upload(StringIO.new(""))
+          post = klass.new
+          post.document = { id: file.id, content_type: "image/png", size: file.size }.to_json
+          expect(post.valid?).to be_falsy
+          expect(post.errors[:document].length).to eq(1)
+        end
+      end
+
+      context "when zero byte upload is allowed" do
+        before do
+          allow(Refile).to receive(:allow_zero_byte_files).and_return(true)
+        end
+
+        it "returns true when file size is zero" do
+          file = Refile.cache.upload(StringIO.new(""))
+          post = klass.new
+          post.document = { id: file.id, content_type: "image/png", size: file.size }.to_json
+          expect(post.valid?).to be_truthy
+          expect(post.errors[:document]).to be_empty
+        end
       end
     end
   end
